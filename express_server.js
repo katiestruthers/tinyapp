@@ -12,14 +12,19 @@ const urlDatabase = {
 
 const generateRandomString = function() {
   let string = '';
+  let result;
 
   for (let i = 0; i < 6; i++) {
-    string += String.fromCharCode(Math.floor(Math.random() * 95) + 33);
+    // alphanumeric ASCII: 48-57, 65-90, 97-122
+    do {
+      result = Math.floor(Math.random() * 75) + 48;
+    } while ((result > 57 && result < 65) || (result > 90 && result < 97));
+
+    string += String.fromCharCode(result);
   }
 
   return string;
 };
-console.log(generateRandomString());
 
 app.get('/', (request, response) => {
   response.send('Hello!');
@@ -36,6 +41,11 @@ app.get('/urls/new', (request, response) => {
 
 app.get('/urls/:id', (request, response) => {
   const templateVars = { id: request.params.id, longURL: urlDatabase.id };
+
+  // if (templateVars.longURL === undefined) {
+  //   response.send(`${templateVars.id} does not exist`);
+  // }
+
   response.render('urls_show', templateVars);
 });
 
@@ -53,8 +63,9 @@ app.get('/hello', (request, response) => {
 });
 
 app.post('/urls', (request, response) => {
-  console.log(request.body);
-  response.send('Ok');
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = request.body.longURL;
+  response.redirect(`/u/${shortURL}`);
 });
 
 app.listen(PORT, () => {
