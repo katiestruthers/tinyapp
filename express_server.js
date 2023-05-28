@@ -41,11 +41,6 @@ app.get('/urls/new', (request, response) => {
 
 app.get('/urls/:id', (request, response) => {
   const templateVars = { id: request.params.id, longURL: urlDatabase.id };
-
-  // if (templateVars.longURL === undefined) {
-  //   response.send(`${templateVars.id} does not exist`);
-  // }
-
   response.render('urls_show', templateVars);
 });
 
