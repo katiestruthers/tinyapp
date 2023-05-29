@@ -1,9 +1,11 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080;
 
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 const urlDatabase = {
   'b2xVn2': 'http://www.lighthouselabs.ca',
@@ -31,16 +33,24 @@ app.get('/', (request, response) => {
 });
 
 app.get('/urls', (request, response) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = {
+    urls: urlDatabase,
+    username: request.cookies["username"]
+  };
   response.render('urls_index', templateVars);
 });
 
 app.get('/urls/new', (request, response) => {
-  response.render('urls_new');
+  const templateVars = { username: request.cookies["username"] };
+  response.render('urls_new', templateVars);
 });
 
 app.get('/urls/:id', (request, response) => {
-  const templateVars = { id: request.params.id, longURL: urlDatabase.id };
+  const templateVars = {
+    id: request.params.id,
+    longURL: urlDatabase.id,
+    username: request.cookies["username"]
+  };
   response.render('urls_show', templateVars);
 });
 
