@@ -9,7 +9,20 @@ app.use(cookieParser());
 
 const urlDatabase = {
   'b2xVn2': 'http://www.lighthouselabs.ca',
-  '9sm5xK': 'http://www.google.com'
+  '9sm5xK': 'http://www.google.com',
+};
+
+const users = {
+  '51o7z2': {
+    id: '51o7z2',
+    email: 'a@a.com',
+    password: '123',
+  },
+  'vv6naa': {
+    id: 'vv6naa',
+    email: "b@b.com",
+    password: "456",
+  },
 };
 
 const generateRandomString = function() {
@@ -23,6 +36,10 @@ app.get('/', (req, res) => {
 app.get('/hello', (req, res) => {
   res.send('<html><body>Hello <b>World</b></body></html>\n');
 });
+
+/////////////////////////////////////////////////////////////
+// URL ROUTES
+/////////////////////////////////////////////////////////////
 
 // INDEX - display urls index
 app.get('/urls', (req, res) => {
@@ -76,6 +93,28 @@ app.post('/urls/:id/delete', (req, res) => {
 app.post('/urls/:id', (req, res) => {
   const id = req.params.id;
   urlDatabase[id] = req.body.longURL;
+  res.redirect('/urls');
+});
+
+/////////////////////////////////////////////////////////////
+// USER ROUTES
+/////////////////////////////////////////////////////////////
+
+// CREATE - display form to register a new user
+app.get('/register', (req, res) => {
+  const templateVars = { username: req.cookies["username"] };
+  res.render('register', templateVars);
+});
+
+// SAVE - add a new user
+app.post('/register', (req, res) => {
+  const id = generateRandomString();
+  users[id] = {
+    id: id,
+    email: req.body.email,
+    password: req.body.password,
+  };
+  res.cookie('user_id', id);
   res.redirect('/urls');
 });
 
