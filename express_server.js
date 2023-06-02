@@ -45,7 +45,7 @@ app.get('/hello', (req, res) => {
 app.get('/urls', (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"]
+    user: users[req.cookies['user_id']],
   };
   res.render('urls_index', templateVars);
 });
@@ -56,7 +56,7 @@ app.get('/urls.json', (req, res) => {
 
 // CREATE - display form to create a new url
 app.get('/urls/new', (req, res) => {
-  const templateVars = { username: req.cookies["username"] };
+  const templateVars = { user: users[req.cookies['user_id']] };
   res.render('urls_new', templateVars);
 });
 
@@ -65,7 +65,7 @@ app.get('/urls/:id', (req, res) => {
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase.id,
-    username: req.cookies["username"]
+    user: users[req.cookies['user_id']],
   };
   res.render('urls_show', templateVars);
 });
@@ -102,7 +102,7 @@ app.post('/urls/:id', (req, res) => {
 
 // CREATE - display form to register a new user
 app.get('/register', (req, res) => {
-  const templateVars = { username: req.cookies["username"] };
+  const templateVars = { user: users[req.cookies['user_id']] };
   res.render('register', templateVars);
 });
 
@@ -120,7 +120,7 @@ app.post('/register', (req, res) => {
 
 // LOGIN a user
 app.post('/login', (req, res) => {
-  res.cookie('username', req.body.username);
+  res.cookie('user_id', req.body.id);
   res.redirect('/urls');
 });
 
