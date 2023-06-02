@@ -51,7 +51,7 @@ app.get('/hello', (req, res) => {
 // URL ROUTES
 /////////////////////////////////////////////////////////////
 
-// INDEX - display urls index
+// Display urls index
 app.get('/urls', (req, res) => {
   const templateVars = {
     urls: urlDatabase,
@@ -64,13 +64,13 @@ app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
 
-// CREATE - display form to create a new url
+// Display form to create a new url
 app.get('/urls/new', (req, res) => {
   const templateVars = { user: users[req.cookies['user_id']] };
   res.render('urls_new', templateVars);
 });
 
-// EDIT - display form to edit a url
+// Display form to edit a url
 app.get('/urls/:id', (req, res) => {
   const templateVars = {
     id: req.params.id,
@@ -80,26 +80,26 @@ app.get('/urls/:id', (req, res) => {
   res.render('urls_show', templateVars);
 });
 
-// READ - redirect from short url to associated long url
+// Redirect from short url to associated long url
 app.get('/u/:id', (req, res) => {
   const longURL = urlDatabase[req.params.id];
   res.redirect(longURL);
 });
 
-// SAVE - add a new url
+// Add a new url
 app.post('/urls', (req, res) => {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
   res.redirect(`/u/${shortURL}`);
 });
 
-// DELETE - delete an existing url
+// Delete an existing url
 app.post('/urls/:id/delete', (req, res) => {
   delete urlDatabase[req.params.id];
   res.redirect('/urls');
 });
 
-// UPDATE - update an existing url
+// Update an existing url
 app.post('/urls/:id', (req, res) => {
   const id = req.params.id;
   urlDatabase[id] = req.body.longURL;
@@ -110,19 +110,31 @@ app.post('/urls/:id', (req, res) => {
 // USER ROUTES
 /////////////////////////////////////////////////////////////
 
-// CREATE - display form to register a new user
+// Display form to register a new user
 app.get('/register', (req, res) => {
-  const templateVars = { user: users[req.cookies['user_id']] };
+  const user = req.cookies['user_id'];
+
+  if (user) {
+    return res.redirect('/urls');
+  }
+
+  const templateVars = { user: users[user] };
   res.render('register', templateVars);
 });
 
-// EDIT - display form to login existing user
+// Display form to login user
 app.get('/login', (req, res) => {
-  const templateVars = { user: users[req.cookies['user_id']] };
+  const user = req.cookies['user_id'];
+
+  if (user) {
+    return res.redirect('/urls');
+  }
+
+  const templateVars = { user: users[user] };
   res.render('login', templateVars);
 });
 
-// SAVE - add a new user
+// Register a new user
 app.post('/register', (req, res) => {
   const id = generateRandomString();
   const email = req.body.email;
@@ -146,7 +158,7 @@ app.post('/register', (req, res) => {
   res.redirect('/urls');
 });
 
-// UPDATE - login a registered user
+// Login a registered user
 app.post('/login', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -164,7 +176,7 @@ app.post('/login', (req, res) => {
   res.redirect('/urls');
 });
 
-// UPDATE - logout a currently logged in user
+// Logout a currently logged in user
 app.post('/logout', (req, res) => {
   res.clearCookie('user_id');
   res.redirect('/login');
