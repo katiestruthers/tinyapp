@@ -16,70 +16,79 @@ const generateRandomString = function() {
   return Math.random().toString(36).substring(2, 8);
 };
 
-app.get('/', (request, response) => {
-  response.send('Hello!');
+app.get('/', (req, res) => {
+  res.send('Hello!');
 });
 
-app.get('/urls', (request, response) => {
+app.get('/hello', (req, res) => {
+  res.send('<html><body>Hello <b>World</b></body></html>\n');
+});
+
+// INDEX - display urls index
+app.get('/urls', (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    username: request.cookies["username"]
+    username: req.cookies["username"]
   };
-  response.render('urls_index', templateVars);
+  res.render('urls_index', templateVars);
 });
 
-app.get('/urls/new', (request, response) => {
-  const templateVars = { username: request.cookies["username"] };
-  response.render('urls_new', templateVars);
+app.get('/urls.json', (req, res) => {
+  res.json(urlDatabase);
 });
 
-app.get('/urls/:id', (request, response) => {
+// CREATE - display form to create a new url
+app.get('/urls/new', (req, res) => {
+  const templateVars = { username: req.cookies["username"] };
+  res.render('urls_new', templateVars);
+});
+
+// EDIT - display form to edit a url
+app.get('/urls/:id', (req, res) => {
   const templateVars = {
-    id: request.params.id,
+    id: req.params.id,
     longURL: urlDatabase.id,
-    username: request.cookies["username"]
+    username: req.cookies["username"]
   };
-  response.render('urls_show', templateVars);
+  res.render('urls_show', templateVars);
 });
 
-app.get('/u/:id', (request, response) => {
-  const longURL = urlDatabase[request.params.id];
-  response.redirect(longURL);
+// READ - redirect from short url to associated long url
+app.get('/u/:id', (req, res) => {
+  const longURL = urlDatabase[req.params.id];
+  res.redirect(longURL);
 });
 
-app.get('/urls.json', (request, response) => {
-  response.json(urlDatabase);
-});
-
-app.get('/hello', (request, response) => {
-  response.send('<html><body>Hello <b>World</b></body></html>\n');
-});
-
-app.post('/urls', (request, response) => {
+// SAVE - add a new url
+app.post('/urls', (req, res) => {
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = request.body.longURL;
-  response.redirect(`/u/${shortURL}`);
+  urlDatabase[shortURL] = req.body.longURL;
+  res.redirect(`/u/${shortURL}`);
 });
 
-app.post('/urls/:id/delete', (request, response) => {
-  delete urlDatabase[request.params.id];
-  response.redirect('/urls');
+// DELETE - delete an existing url
+app.post('/urls/:id/delete', (req, res) => {
+  delete urlDatabase[req.params.id];
+  res.redirect('/urls');
 });
 
-app.post('/urls/:id', (request, response) => {
-  const id = request.params.id;
-  urlDatabase[id] = request.body.longURL;
-  response.redirect('/urls');
+// UPDATE - update an existing url
+app.post('/urls/:id', (req, res) => {
+  const id = req.params.id;
+  urlDatabase[id] = req.body.longURL;
+  res.redirect('/urls');
 });
 
-app.post('/login', (request, response) => {
-  response.cookie('username', request.body.username);
-  response.redirect('/urls');
+// LOGIN a user
+app.post('/login', (req, res) => {
+  res.cookie('username', req.body.username);
+  res.redirect('/urls');
 });
 
-app.post('/logout', (request, response) => {
-  response.clearCookie('username');
-  response.redirect('/urls');
+// LOGOUT currently logged in user
+app.post('/logout', (req, res) => {
+  res.clearCookie('username');
+  res.redirect('/urls');
 });
 
 app.listen(PORT, () => {
