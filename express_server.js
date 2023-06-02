@@ -70,6 +70,14 @@ app.get('/urls/new', (req, res) => {
   res.render('urls_new', templateVars);
 });
 
+// Create a new url
+app.post('/urls', (req, res) => {
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = req.body.longURL;
+  res.redirect(`/urls/${shortURL}`);
+});
+
+
 // Display form to edit a url
 app.get('/urls/:id', (req, res) => {
   const templateVars = {
@@ -80,29 +88,22 @@ app.get('/urls/:id', (req, res) => {
   res.render('urls_show', templateVars);
 });
 
+// Edit a url
+app.post('/urls/:id', (req, res) => {
+  const id = req.params.id;
+  urlDatabase[id] = req.body.longURL;
+  res.redirect('/urls');
+});
+
 // Redirect from short url to associated long url
 app.get('/u/:id', (req, res) => {
   const longURL = urlDatabase[req.params.id];
   res.redirect(longURL);
 });
 
-// Add a new url
-app.post('/urls', (req, res) => {
-  const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
-  res.redirect(`/u/${shortURL}`);
-});
-
 // Delete an existing url
 app.post('/urls/:id/delete', (req, res) => {
   delete urlDatabase[req.params.id];
-  res.redirect('/urls');
-});
-
-// Update an existing url
-app.post('/urls/:id', (req, res) => {
-  const id = req.params.id;
-  urlDatabase[id] = req.body.longURL;
   res.redirect('/urls');
 });
 
@@ -120,18 +121,6 @@ app.get('/register', (req, res) => {
 
   const templateVars = { user: users[user] };
   res.render('register', templateVars);
-});
-
-// Display form to login user
-app.get('/login', (req, res) => {
-  const user = req.cookies['user_id'];
-
-  if (user) {
-    return res.redirect('/urls');
-  }
-
-  const templateVars = { user: users[user] };
-  res.render('login', templateVars);
 });
 
 // Register a new user
@@ -156,6 +145,18 @@ app.post('/register', (req, res) => {
 
   res.cookie('user_id', id);
   res.redirect('/urls');
+});
+
+// Display form to login user
+app.get('/login', (req, res) => {
+  const user = req.cookies['user_id'];
+
+  if (user) {
+    return res.redirect('/urls');
+  }
+
+  const templateVars = { user: users[user] };
+  res.render('login', templateVars);
 });
 
 // Login a registered user
