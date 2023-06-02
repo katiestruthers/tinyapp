@@ -131,7 +131,13 @@ app.get('/u/:id', (req, res) => {
 
 // Delete an existing url
 app.post('/urls/:id/delete', (req, res) => {
-  delete urlDatabase[req.params.id];
+  const id = req.params.id;
+
+  if (!urlDatabase[id]) {
+    return res.status(400).send(`Unable to delete. Short URL ID ${id} does not exist.`);
+  }
+
+  delete urlDatabase[id];
   res.redirect('/urls');
 });
 
