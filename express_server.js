@@ -13,19 +13,7 @@ const urlDatabase = {
 };
 
 const generateRandomString = function() {
-  let string = '';
-  let result;
-
-  for (let i = 0; i < 6; i++) {
-    // alphanumeric ASCII: 48-57, 65-90, 97-122
-    do {
-      result = Math.floor(Math.random() * 75) + 48;
-    } while ((result > 57 && result < 65) || (result > 90 && result < 97));
-
-    string += String.fromCharCode(result);
-  }
-
-  return string;
+  return Math.random().toString(36).substring(2, 8);
 };
 
 app.get('/', (request, response) => {
