@@ -129,11 +129,11 @@ app.post('/register', (req, res) => {
   const password = req.body.password;
 
   if (!(email) || !(password)) {
-    res.status(400).send('Must include an email and password.');
+    return res.status(400).send('Must include an email and password.');
   }
 
   if (getUserByEmail(email)) {
-    res.status(400).send(`Email address ${email} is already registered.`);
+    return res.status(400).send(`Email address ${email} is already registered.`);
   }
 
   users[id] = {
@@ -148,14 +148,26 @@ app.post('/register', (req, res) => {
 
 // UPDATE - login a registered user
 app.post('/login', (req, res) => {
-  res.cookie('user_id', getUserByEmail(req.body.email));
+  const email = req.body.email;
+  const password = req.body.password;
+  const id = getUserByEmail(email);
+
+  if (!(id)) {
+    return res.status(403).send(`Email address ${email} is not registered.`);
+  }
+
+  if (password !== users[id].password) {
+    return res.status(403).send('Incorrect password.');
+  }
+
+  res.cookie('user_id', id);
   res.redirect('/urls');
 });
 
 // UPDATE - logout a currently logged in user
 app.post('/logout', (req, res) => {
-  res.clearCookie('username');
-  res.redirect('/urls');
+  res.clearCookie('user_id');
+  res.redirect('/login');
 });
 
 app.listen(PORT, () => {
