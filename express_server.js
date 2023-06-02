@@ -29,6 +29,16 @@ const generateRandomString = function() {
   return Math.random().toString(36).substring(2, 8);
 };
 
+const getUserByEmail = function(email) {
+  for (const user in users) {
+    if (users[user].email === email) {
+      return user;
+    }
+  }
+
+  return null;
+};
+
 app.get('/', (req, res) => {
   res.send('Hello!');
 });
@@ -109,11 +119,23 @@ app.get('/register', (req, res) => {
 // SAVE - add a new user
 app.post('/register', (req, res) => {
   const id = generateRandomString();
+  const email = req.body.email;
+  const password = req.body.password;
+
+  if (!(email) || !(password)) {
+    res.status(400).send('Must include an email and password.');
+  }
+
+  if (getUserByEmail(email)) {
+    res.status(400).send(`Email address ${email} is already registered.`);
+  }
+
   users[id] = {
     id: id,
-    email: req.body.email,
-    password: req.body.password,
+    email: email,
+    password: password,
   };
+
   res.cookie('user_id', id);
   res.redirect('/urls');
 });
