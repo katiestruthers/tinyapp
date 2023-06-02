@@ -66,12 +66,24 @@ app.get('/urls.json', (req, res) => {
 
 // Display form to create a new url
 app.get('/urls/new', (req, res) => {
-  const templateVars = { user: users[req.cookies['user_id']] };
+  const user = req.cookies['user_id'];
+
+  if (!user) {
+    return res.redirect('/login');
+  }
+
+  const templateVars = { user: users[user] };
   res.render('urls_new', templateVars);
 });
 
 // Create a new url
 app.post('/urls', (req, res) => {
+  const user = req.cookies['user_id'];
+
+  if (!user) {
+    return res.status(400).send('Must be logged in to shorten URLs.');
+  }
+
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
   res.redirect(`/urls/${shortURL}`);
