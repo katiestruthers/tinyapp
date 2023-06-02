@@ -116,6 +116,12 @@ app.get('/register', (req, res) => {
   res.render('register', templateVars);
 });
 
+// EDIT - display form to login existing user
+app.get('/login', (req, res) => {
+  const templateVars = { user: users[req.cookies['user_id']] };
+  res.render('login', templateVars);
+});
+
 // SAVE - add a new user
 app.post('/register', (req, res) => {
   const id = generateRandomString();
@@ -140,13 +146,13 @@ app.post('/register', (req, res) => {
   res.redirect('/urls');
 });
 
-// LOGIN a user
+// UPDATE - login a registered user
 app.post('/login', (req, res) => {
-  res.cookie('user_id', req.body.id);
+  res.cookie('user_id', getUserByEmail(req.body.email));
   res.redirect('/urls');
 });
 
-// LOGOUT currently logged in user
+// UPDATE - logout a currently logged in user
 app.post('/logout', (req, res) => {
   res.clearCookie('username');
   res.redirect('/urls');

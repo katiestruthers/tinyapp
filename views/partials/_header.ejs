@@ -23,17 +23,14 @@
         Logged in as: <%= user.email %>!
       </span>
       <form method="POST" action="/logout">
-      <button type="submit" class="btn btn-outline-dark">Logout</button>
+        <button type="submit" class="btn btn-outline-dark">Logout</button>
       </form>
     <% } else{ %>  
-      <form method="POST" action="/login">
-        <input
-          type="text"
-          name="email"
-          placeholder="Email"
-          style="width: 200px"
-        />
-      <button type="submit" class="btn btn-outline-dark">Login</button>
+      <form method="GET" action="/login" style="margin-right: 1em">
+        <button type="submit" class="btn btn-outline-dark">Login</button>
+      </form>
+      <form method="GET" action="/register">
+        <button type="submit" class="btn btn-outline-dark">Register</button>
       </form>
    <% } %>
   </nav>
