@@ -97,19 +97,35 @@ app.get('/urls/:id', (req, res) => {
     longURL: urlDatabase.id,
     user: users[req.cookies['user_id']],
   };
+
+  if (!templateVars.longURL) {
+    return res.status(400).send(`Unable to display edit page. Short URL ID ${templateVars.id} does not exist.`);
+  }
+
   res.render('urls_show', templateVars);
 });
 
 // Edit a url
 app.post('/urls/:id', (req, res) => {
   const id = req.params.id;
+
+  if (!urlDatabase[id]) {
+    return res.status(400).send(`Unable to edit. Short URL ID ${id} does not exist.`);
+  }
+
   urlDatabase[id] = req.body.longURL;
   res.redirect('/urls');
 });
 
 // Redirect from short url to associated long url
 app.get('/u/:id', (req, res) => {
-  const longURL = urlDatabase[req.params.id];
+  const id = req.params.id;
+  const longURL = urlDatabase[id];
+
+  if (!longURL) {
+    return res.status(400).send(`Unable to redirect. Short URL ID ${id} does not exist.`);
+  }
+
   res.redirect(longURL);
 });
 
