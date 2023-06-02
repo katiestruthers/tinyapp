@@ -8,8 +8,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 const urlDatabase = {
-  'b2xVn2': 'http://www.lighthouselabs.ca',
-  '9sm5xK': 'http://www.google.com',
+  b6UTxQ: {
+    longURL: 'https://www.tsn.ca',
+    userID: '51o7z2',
+  },
+  i3BoGr: {
+    longURL: 'https://www.google.ca',
+    userID: 'vv6naa',
+  },
 };
 
 const users = {
@@ -85,21 +91,28 @@ app.post('/urls', (req, res) => {
   }
 
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL] = {
+    longURL: req.body.longURL,
+    userID: user,
+  };
+
   res.redirect(`/urls/${shortURL}`);
 });
 
 
 // Display form to edit a url
 app.get('/urls/:id', (req, res) => {
+  const id = req.params.id;
+  const user = req.cookies['user_id'];
+
   const templateVars = {
-    id: req.params.id,
-    longURL: urlDatabase.id,
-    user: users[req.cookies['user_id']],
+    id: id,
+    longURL: urlDatabase[id].longURL,
+    user: users[user],
   };
 
   if (!templateVars.longURL) {
-    return res.status(400).send(`Unable to display edit page. Short URL ID ${templateVars.id} does not exist.`);
+    return res.status(400).send(`Unable to display edit page. Short URL ID ${id} does not exist.`);
   }
 
   res.render('urls_show', templateVars);
@@ -113,14 +126,14 @@ app.post('/urls/:id', (req, res) => {
     return res.status(400).send(`Unable to edit. Short URL ID ${id} does not exist.`);
   }
 
-  urlDatabase[id] = req.body.longURL;
+  urlDatabase[id].longURL = req.body.longURL;
   res.redirect('/urls');
 });
 
 // Redirect from short url to associated long url
 app.get('/u/:id', (req, res) => {
   const id = req.params.id;
-  const longURL = urlDatabase[id];
+  const longURL = urlDatabase[id].longURL;
 
   if (!longURL) {
     return res.status(400).send(`Unable to redirect. Short URL ID ${id} does not exist.`);
