@@ -1,3 +1,4 @@
+const { generateRandomString, getUserByEmail, urlsForUser } = require('./helpers');
 const express = require('express');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
@@ -9,7 +10,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2'],
-  maxAge: 24 * 60 * 60 * 1000, // 24 hours
 }));
 
 const urlDatabase = {
@@ -36,32 +36,6 @@ const users = {
   },
 };
 
-const generateRandomString = function() {
-  return Math.random().toString(36).substring(2, 8);
-};
-
-const getUserByEmail = function(email) {
-  for (const user in users) {
-    if (users[user].email === email) {
-      return user;
-    }
-  }
-
-  return null;
-};
-
-const urlsForUser = function(id) {
-  const ret = {};
-
-  for (const url in urlDatabase) {
-    if (urlDatabase[url].userID === id) {
-      ret[url] = urlDatabase[url];
-    }
-  }
-
-  return ret;
-};
-
 app.get('/', (req, res) => {
   res.send('Hello!');
 });
@@ -83,7 +57,7 @@ app.get('/urls', (req, res) => {
   }
 
   const templateVars = {
-    urls: urlsForUser(user),
+    urls: urlsForUser(user, urlDatabase),
     user: users[user],
   };
   res.render('urls_index', templateVars);
@@ -232,7 +206,7 @@ app.post('/register', (req, res) => {
     return res.status(400).send('Must include an email and password.');
   }
 
-  if (getUserByEmail(email)) {
+  if (getUserByEmail(email, users)) {
     return res.status(400).send(`Email address ${email} is already registered.`);
   }
 
@@ -263,13 +237,13 @@ app.get('/login', (req, res) => {
 app.post('/login', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const hashedPassword = users[id].password;
-  const id = getUserByEmail(email);
+  const id = getUserByEmail(email, users);
 
   if (!(id)) {
     return res.status(400).send(`Email address ${email} is not registered.`);
   }
 
+  const hashedPassword = users[id].password;
   if (!bcrypt.compareSync(password, hashedPassword)) {
     return res.status(400).send('Incorrect password.');
   }
@@ -281,7 +255,7 @@ app.post('/login', (req, res) => {
 
 // Logout a currently logged in user
 app.post('/logout', (req, res) => {
-  res.clearCookie('user_id');
+  req.session = null;
   res.redirect('/login');
 });
 
