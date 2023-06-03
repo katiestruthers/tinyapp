@@ -1,12 +1,16 @@
 const express = require('express');
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
 const app = express();
 const PORT = 8080;
 
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2'],
+  maxAge: 24 * 60 * 60 * 1000, // 24 hours
+}));
 
 const urlDatabase = {
   b6UTxQ: {
@@ -72,7 +76,7 @@ app.get('/hello', (req, res) => {
 
 // Display urls index
 app.get('/urls', (req, res) => {
-  const user = req.cookies['user_id'];
+  const user = req.session.user_id;
 
   if (!user) {
     return res.status(401).send('Must login first before viewing your URLs.');
@@ -91,7 +95,7 @@ app.get('/urls.json', (req, res) => {
 
 // Display form to create a new url
 app.get('/urls/new', (req, res) => {
-  const user = req.cookies['user_id'];
+  const user = req.session.user_id;
 
   if (!user) {
     return res.redirect('/login');
@@ -103,7 +107,7 @@ app.get('/urls/new', (req, res) => {
 
 // Create a new url
 app.post('/urls', (req, res) => {
-  const user = req.cookies['user_id'];
+  const user = req.session.user_id;
 
   if (!user) {
     return res.status(401).send('Must login to create new shortened URL.');
@@ -122,7 +126,7 @@ app.post('/urls', (req, res) => {
 // Display form to edit a url
 app.get('/urls/:id', (req, res) => {
   const id = req.params.id;
-  const user = req.cookies['user_id'];
+  const user = req.session.user_id;
   const longURL = urlDatabase[id].longURL;
   const errorMsg = 'Unable to display edit page. ';
 
@@ -149,7 +153,7 @@ app.get('/urls/:id', (req, res) => {
 // Edit a url
 app.post('/urls/:id', (req, res) => {
   const id = req.params.id;
-  const user = req.cookies['user_id'];
+  const user = req.session.user_id;
   const errorMsg = 'Unable to edit. ';
 
   if (!urlDatabase[id]) {
@@ -183,7 +187,7 @@ app.get('/u/:id', (req, res) => {
 // Delete an existing url
 app.post('/urls/:id/delete', (req, res) => {
   const id = req.params.id;
-  const user = req.cookies['user_id'];
+  const user = req.session.user_id;
   const errorMsg = 'Unable to delete. ';
 
   if (!urlDatabase[id]) {
@@ -208,7 +212,7 @@ app.post('/urls/:id/delete', (req, res) => {
 
 // Display form to register a new user
 app.get('/register', (req, res) => {
-  const user = req.cookies['user_id'];
+  const user = req.session.user_id;
 
   if (user) {
     return res.redirect('/urls');
@@ -238,14 +242,14 @@ app.post('/register', (req, res) => {
     password: bcrypt.hashSync(password, 10),
   };
 
-  console.log(users);
-  res.cookie('user_id', id);
+  // eslint-disable-next-line camelcase
+  req.session.user_id = id;
   res.redirect('/urls');
 });
 
 // Display form to login user
 app.get('/login', (req, res) => {
-  const user = req.cookies['user_id'];
+  const user = req.session.user_id;
 
   if (user) {
     return res.redirect('/urls');
@@ -270,7 +274,8 @@ app.post('/login', (req, res) => {
     return res.status(400).send('Incorrect password.');
   }
 
-  res.cookie('user_id', id);
+  // eslint-disable-next-line camelcase
+  req.session.user_id = id;
   res.redirect('/urls');
 });
 
