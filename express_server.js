@@ -45,6 +45,18 @@ const getUserByEmail = function(email) {
   return null;
 };
 
+const urlsForUser = function(id) {
+  const ret = {};
+
+  for (const url in urlDatabase) {
+    if (urlDatabase[url].userID === id) {
+      ret[url] = urlDatabase[url];
+    }
+  }
+
+  return ret;
+};
+
 app.get('/', (req, res) => {
   res.send('Hello!');
 });
@@ -59,9 +71,15 @@ app.get('/hello', (req, res) => {
 
 // Display urls index
 app.get('/urls', (req, res) => {
+  const user = req.cookies['user_id'];
+
+  if (!user) {
+    return res.status(401).send('Must login first before viewing your URLs.');
+  }
+
   const templateVars = {
-    urls: urlDatabase,
-    user: users[req.cookies['user_id']],
+    urls: urlsForUser(user),
+    user: users[user],
   };
   res.render('urls_index', templateVars);
 });
@@ -87,7 +105,7 @@ app.post('/urls', (req, res) => {
   const user = req.cookies['user_id'];
 
   if (!user) {
-    return res.status(400).send('Must be logged in to shorten URLs.');
+    return res.status(401).send('Must login to create new shortened URL.');
   }
 
   const shortURL = generateRandomString();
@@ -104,26 +122,45 @@ app.post('/urls', (req, res) => {
 app.get('/urls/:id', (req, res) => {
   const id = req.params.id;
   const user = req.cookies['user_id'];
+  const longURL = urlDatabase[id].longURL;
+  const errorMsg = 'Unable to display edit page. ';
+
+  if (!longURL) {
+    return res.status(400).send(`${errorMsg} URL ID ${id} does not exist.`);
+  }
+
+  if (!user) {
+    return res.status(401).send(`${errorMsg} Must login to verify ownership of URL ID ${id}.`);
+  }
+
+  if (user !== urlDatabase[id].userID) {
+    return res.status(403).send(`${errorMsg} You are not the owner of URL ID ${id}.`);
+  }
 
   const templateVars = {
     id: id,
-    longURL: urlDatabase[id].longURL,
+    longURL: longURL,
     user: users[user],
   };
-
-  if (!templateVars.longURL) {
-    return res.status(400).send(`Unable to display edit page. Short URL ID ${id} does not exist.`);
-  }
-
   res.render('urls_show', templateVars);
 });
 
 // Edit a url
 app.post('/urls/:id', (req, res) => {
   const id = req.params.id;
+  const user = req.cookies['user_id'];
+  const errorMsg = 'Unable to edit. ';
 
   if (!urlDatabase[id]) {
-    return res.status(400).send(`Unable to edit. Short URL ID ${id} does not exist.`);
+    return res.status(400).send(`${errorMsg} URL ID ${id} does not exist.`);
+  }
+
+  if (!user) {
+    return res.status(401).send(`${errorMsg} Must login to verify ownership of URL ID ${id}.`);
+  }
+
+  if (user !== urlDatabase[id].userID) {
+    return res.status(403).send(`${errorMsg} You are not the owner of URL ID ${id}.`);
   }
 
   urlDatabase[id].longURL = req.body.longURL;
@@ -136,7 +173,7 @@ app.get('/u/:id', (req, res) => {
   const longURL = urlDatabase[id].longURL;
 
   if (!longURL) {
-    return res.status(400).send(`Unable to redirect. Short URL ID ${id} does not exist.`);
+    return res.status(400).send(`Unable to redirect. URL ID ${id} does not exist.`);
   }
 
   res.redirect(longURL);
@@ -145,9 +182,19 @@ app.get('/u/:id', (req, res) => {
 // Delete an existing url
 app.post('/urls/:id/delete', (req, res) => {
   const id = req.params.id;
+  const user = req.cookies['user_id'];
+  const errorMsg = 'Unable to delete. ';
 
   if (!urlDatabase[id]) {
-    return res.status(400).send(`Unable to delete. Short URL ID ${id} does not exist.`);
+    return res.status(400).send(`${errorMsg} URL ID ${id} does not exist.`);
+  }
+
+  if (!user) {
+    return res.status(401).send(`${errorMsg} Must login to verify ownership of URL ID ${id}.`);
+  }
+
+  if (user !== urlDatabase[id].userID) {
+    return res.status(403).send(`${errorMsg} You are not the owner of URL ID ${id}.`);
   }
 
   delete urlDatabase[id];
@@ -213,11 +260,11 @@ app.post('/login', (req, res) => {
   const id = getUserByEmail(email);
 
   if (!(id)) {
-    return res.status(403).send(`Email address ${email} is not registered.`);
+    return res.status(400).send(`Email address ${email} is not registered.`);
   }
 
   if (password !== users[id].password) {
-    return res.status(403).send('Incorrect password.');
+    return res.status(400).send('Incorrect password.');
   }
 
   res.cookie('user_id', id);
