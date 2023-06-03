@@ -37,11 +37,13 @@ const users = {
 };
 
 app.get('/', (req, res) => {
-  res.send('Hello!');
-});
+  const user = req.session.user_id;
 
-app.get('/hello', (req, res) => {
-  res.send('<html><body>Hello <b>World</b></body></html>\n');
+  if (user) {
+    return res.redirect('/urls');
+  }
+
+  res.redirect('/login');
 });
 
 /////////////////////////////////////////////////////////////
@@ -61,10 +63,6 @@ app.get('/urls', (req, res) => {
     user: users[user],
   };
   res.render('urls_index', templateVars);
-});
-
-app.get('/urls.json', (req, res) => {
-  res.json(urlDatabase);
 });
 
 // Display form to create a new url
@@ -105,7 +103,7 @@ app.get('/urls/:id', (req, res) => {
   const errorMsg = 'Unable to display edit page. ';
 
   if (!longURL) {
-    return res.status(400).send(`${errorMsg} URL ID ${id} does not exist.`);
+    return res.status(404).send(`${errorMsg} URL ID ${id} does not exist.`);
   }
 
   if (!user) {
@@ -131,7 +129,7 @@ app.post('/urls/:id', (req, res) => {
   const errorMsg = 'Unable to edit. ';
 
   if (!urlDatabase[id]) {
-    return res.status(400).send(`${errorMsg} URL ID ${id} does not exist.`);
+    return res.status(404).send(`${errorMsg} URL ID ${id} does not exist.`);
   }
 
   if (!user) {
@@ -152,7 +150,7 @@ app.get('/u/:id', (req, res) => {
   const longURL = urlDatabase[id].longURL;
 
   if (!longURL) {
-    return res.status(400).send(`Unable to redirect. URL ID ${id} does not exist.`);
+    return res.status(404).send(`Unable to redirect. URL ID ${id} does not exist.`);
   }
 
   res.redirect(longURL);
@@ -165,7 +163,7 @@ app.post('/urls/:id/delete', (req, res) => {
   const errorMsg = 'Unable to delete. ';
 
   if (!urlDatabase[id]) {
-    return res.status(400).send(`${errorMsg} URL ID ${id} does not exist.`);
+    return res.status(404).send(`${errorMsg} URL ID ${id} does not exist.`);
   }
 
   if (!user) {
