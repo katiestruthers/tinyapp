@@ -1,5 +1,6 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcryptjs');
 const app = express();
 const PORT = 8080;
 
@@ -22,12 +23,12 @@ const users = {
   '51o7z2': {
     id: '51o7z2',
     email: 'a@a.com',
-    password: '123',
+    password: '$2a$10$dO4bvAGctwd2Ns1n4dw.puWCRQQmOGywA5UCZuMQ4R4m/3mXwC0xy', // 123
   },
   'vv6naa': {
     id: 'vv6naa',
-    email: "b@b.com",
-    password: "456",
+    email: 'b@b.com',
+    password: '$2a$10$UgRugOYbBzf3SutvLRYmFOi44z5pyaLSAf/Xm0xMKrTilpVweJrMa', // 456
   },
 };
 
@@ -234,9 +235,10 @@ app.post('/register', (req, res) => {
   users[id] = {
     id: id,
     email: email,
-    password: password,
+    password: bcrypt.hashSync(password, 10),
   };
 
+  console.log(users);
   res.cookie('user_id', id);
   res.redirect('/urls');
 });
@@ -257,13 +259,14 @@ app.get('/login', (req, res) => {
 app.post('/login', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = users[id].password;
   const id = getUserByEmail(email);
 
   if (!(id)) {
     return res.status(400).send(`Email address ${email} is not registered.`);
   }
 
-  if (password !== users[id].password) {
+  if (!bcrypt.compareSync(password, hashedPassword)) {
     return res.status(400).send('Incorrect password.');
   }
 
