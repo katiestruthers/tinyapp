@@ -27,12 +27,12 @@ const users = {
   '51o7z2': {
     id: '51o7z2',
     email: 'a@a.com',
-    password: '$2a$10$dO4bvAGctwd2Ns1n4dw.puWCRQQmOGywA5UCZuMQ4R4m/3mXwC0xy', // 123
+    password: '$2a$10$dO4bvAGctwd2Ns1n4dw.puWCRQQmOGywA5UCZuMQ4R4m/3mXwC0xy',
   },
   'vv6naa': {
     id: 'vv6naa',
     email: 'b@b.com',
-    password: '$2a$10$UgRugOYbBzf3SutvLRYmFOi44z5pyaLSAf/Xm0xMKrTilpVweJrMa', // 456
+    password: '$2a$10$UgRugOYbBzf3SutvLRYmFOi44z5pyaLSAf/Xm0xMKrTilpVweJrMa',
   },
 };
 
