@@ -99,10 +99,9 @@ app.post('/urls', (req, res) => {
 app.get('/urls/:id', (req, res) => {
   const id = req.params.id;
   const user = req.session.user_id;
-  const longURL = urlDatabase[id].longURL;
   const errorMsg = 'Unable to display edit page. ';
 
-  if (!longURL) {
+  if (!(id in urlDatabase)) {
     return res.status(404).send(`${errorMsg} URL ID ${id} does not exist.`);
   }
 
@@ -116,7 +115,7 @@ app.get('/urls/:id', (req, res) => {
 
   const templateVars = {
     id: id,
-    longURL: longURL,
+    longURL: urlDatabase[id].longURL,
     user: users[user],
   };
   res.render('urls_show', templateVars);
