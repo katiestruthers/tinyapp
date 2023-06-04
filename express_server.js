@@ -127,7 +127,7 @@ app.post('/urls/:id', (req, res) => {
   const user = req.session.user_id;
   const errorMsg = 'Unable to edit. ';
 
-  if (!urlDatabase[id]) {
+  if (!(id in urlDatabase)) {
     return res.status(404).send(`${errorMsg} URL ID ${id} does not exist.`);
   }
 
@@ -146,13 +146,12 @@ app.post('/urls/:id', (req, res) => {
 // Redirect from short url to associated long url
 app.get('/u/:id', (req, res) => {
   const id = req.params.id;
-  const longURL = urlDatabase[id].longURL;
 
-  if (!longURL) {
+  if (!(id in urlDatabase)) {
     return res.status(404).send(`Unable to redirect. URL ID ${id} does not exist.`);
   }
 
-  res.redirect(longURL);
+  res.redirect(urlDatabase[id].longURL);
 });
 
 // Delete an existing url
