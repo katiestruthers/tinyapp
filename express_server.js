@@ -235,7 +235,11 @@ app.post('/login', (req, res) => {
   const password = req.body.password;
   const id = getUserByEmail(email, users);
 
-  if (!(id)) {
+  if (!email || !password) {
+    return res.status(400).send('Must provide both an email address and password.');
+  }
+
+  if (!id) {
     return res.status(400).send(`Email address ${email} is not registered.`);
   }
 
